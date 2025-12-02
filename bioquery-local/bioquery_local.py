@@ -132,20 +132,30 @@ class BioQueryLocal:
         elif tool == "pattern":
             # Try LLM-provided motif first
             pattern = parsed.get("parameters", {}).get("pattern")
-
+            
+            # If no motif from LLM, pull a short motif only from text BEFORE the first FASTA header
             if not pattern:
-                # Pull a motif directly from the user text (3–20 bp; allow IUPAC codes)
-                cands = re.findall(r"[ACGTURYKMSWBDHVN]{3,20}", query, flags=re.I)
-                # Prefer short motifs (avoid the whole pasted sequence)
+                preface = re.split(r'(?m)^\s*>', query, maxsplit=1)[0]
+                cands = re.findall(r'(?<![A-Za-z])[ACGTURYKMSWBDHVN]{3,20}(?![A-Za-z])', preface, flags=re.I)
                 cands = [c.upper() for c in cands if 3 <= len(c) <= 20]
-                if cands:
-                    pattern = cands[0]  # or max(cands, key=len) if you prefer the longest
+                pattern = cands[0] if cands else "ATG"
 
-            # Final fallback
-            if not pattern:
-                pattern = "ATG"
+            # 2) Get mismatch value (from LLM or the raw text)
+            mm = parsed.get("parameters", {}).get("mismatch")
+            if mm is None:
+                # match: "mismatch 1", "mismatches=2", "up to 1 mismatch", etc.
+                m = re.search(r"(?i)mismatch(?:es)?\s*(?:=|:)?\s*(\d+)", query)
+                if not m:
+                    m = re.search(r"(?i)up to\s*(\d+)\s*mismatch", query)
+                mm = int(m.group(1)) if m else 0
+            else:
+                try:
+                    mm = int(mm)
+                except Exception:
+                    mm = 0
 
-            result = self.emboss.find_pattern(sequence, pattern)
+            result = self.emboss.find_pattern(sequence, pattern, mismatch=mm)
+
 
         elif tool == "restriction":
             result = self.emboss.restriction_sites(sequence)
