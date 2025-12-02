@@ -132,6 +132,10 @@ class BioQueryLocal:
     def process_query(self, query: str) -> Dict[str, Any]:
         """Process natural language query"""
 
+        # Normalize inline FASTA headers so '>' starts a new line
+        # e.g., "Find ORFs in >NC_..." -> "\n>NC_..."
+        query = re.sub(r'(?<!\n)>(?=\S)', r'\n>', query)
+
         # Extract sequences (handles prose + FASTA anywhere in the text)
         seqs = extract_sequences_from_text(query)
 
