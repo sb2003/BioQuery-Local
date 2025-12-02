@@ -39,6 +39,12 @@ with st.sidebar:
 """
     )
 
+    st.markdown("### 💡 Example Queries")
+    examples = bq.get_examples()
+    for ex in examples[:5]:
+        if st.button(ex[:30] + "...", key=ex):
+            st.session_state.query = ex
+
     st.markdown("### 📚 Example Sequences")
     if st.button("Load Test DNA"):
         st.session_state.query = bq.example_sequences["test_dna"]
@@ -46,12 +52,6 @@ with st.sidebar:
         st.session_state.query = bq.example_sequences["brca1_fragment"]
     if st.button("Load P53 Fragment"):
         st.session_state.query = bq.example_sequences["p53_fragment"]
-
-    st.markdown("### 💡 Example Queries")
-    examples = bq.get_examples()
-    for ex in examples[:5]:
-        if st.button(ex[:30] + "...", key=ex):
-            st.session_state.query = ex
 
 # Main interface
 col1, col2 = st.columns([3, 1])
@@ -151,4 +151,3 @@ if st.session_state.history:
 
 st.markdown("---")
 st.caption("🏫 BME 110 — Running locally with EMBOSS, BioPython, and Ollama")
-
