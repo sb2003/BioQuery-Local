@@ -130,8 +130,23 @@ class BioQueryLocal:
         elif tool == "find_orfs":
             result = self.emboss.find_orfs(sequence)
         elif tool == "pattern":
-            pattern = parsed.get("parameters", {}).get("pattern", "ATG")
+            # Try LLM-provided motif first
+            pattern = parsed.get("parameters", {}).get("pattern")
+
+            if not pattern:
+                # Pull a motif directly from the user text (3–20 bp; allow IUPAC codes)
+                cands = re.findall(r"[ACGTURYKMSWBDHVN]{3,20}", query, flags=re.I)
+                # Prefer short motifs (avoid the whole pasted sequence)
+                cands = [c.upper() for c in cands if 3 <= len(c) <= 20]
+                if cands:
+                    pattern = cands[0]  # or max(cands, key=len) if you prefer the longest
+
+            # Final fallback
+            if not pattern:
+                pattern = "ATG"
+
             result = self.emboss.find_pattern(sequence, pattern)
+
         elif tool == "restriction":
             result = self.emboss.restriction_sites(sequence)
         elif tool == "gc_content":
