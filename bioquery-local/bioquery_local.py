@@ -5,6 +5,60 @@ from emboss_wrapper import EMBOSSWrapper
 from llm_parser import LocalLLMParser
 from bio_tools import BioTools
 
+# Accept DNA/RNA + IUPAC ambiguity codes
+_IUPAC = set("ACGTURYKMSWBDHVN")
+
+def _clean_seq_line(s: str) -> str:
+    # keep letters only; convert U->T
+    s = "".join(ch for ch in s.upper() if ch.isalpha())
+    s = s.replace("U", "T")
+    return "".join(ch for ch in s if ch in _IUPAC)
+
+def extract_sequences_from_text(text: str) -> list[str]:
+    """
+    Extract sequences whether the user pasted FASTA anywhere in the message
+    or included bare multi-line DNA. Returns 0..N sequences.
+    """
+    seqs: list[str] = []
+
+    # --- FASTA mode (handles prose before/after FASTA) ---
+    in_rec = False
+    cur: list[str] = []
+    for line in text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith(">"):
+            if cur:
+                seqs.append("".join(cur))
+                cur = []
+            in_rec = True
+            continue
+        if in_rec:
+            cleaned = _clean_seq_line(line)
+            if cleaned:
+                cur.append(cleaned)
+    if cur:
+        seqs.append("".join(cur))
+
+    # --- Bare DNA mode (if no FASTA found) ---
+    if not seqs:
+        for m in re.finditer(r"[ACGTURYKMSWBDHVN]{10,}", text, flags=re.I):
+            seqs.append(_clean_seq_line(m.group(0)))
+
+    # Filter very short/empty
+    seqs = [s for s in seqs if len(s) >= 10]
+    return seqs
+
+def mask_text_for_llm(text: str) -> str:
+    """
+    Mask long sequence runs & FASTA headers so the LLM only decides the tool.
+    """
+    # Mask FASTA header lines anywhere
+    masked = re.sub(r"^\s*>.*$", ">[HEADER]", text, flags=re.M)
+    # Mask long contiguous sequence runs
+    masked = re.sub(r"[ACGTURYKMSWBDHVN]{20,}", "[SEQUENCE]", masked, flags=re.I)
+    return masked
 
 class BioQueryLocal:
     """Main application combining all components"""
@@ -24,11 +78,19 @@ class BioQueryLocal:
     def process_query(self, query: str) -> Dict[str, Any]:
         """Process natural language query"""
 
-        # Parse query with LLM
-        parsed = self.llm.parse_query(query)
+        # Extract sequences (handles prose + FASTA anywhere in the text)
+        seqs = extract_sequences_from_text(query)
 
-        # Get sequence (from LLM parse)
-        sequence = parsed.get("sequence")
+        # Mask long sequences so the LLM focuses on intent words
+        masked_query = mask_text_for_llm(query)
+
+        # Parse query with LLM using the masked text
+        parsed = self.llm.parse_query(masked_query)
+
+        # Prefer our extractor over the LLM’s guess
+        # (choose the first sequence; or use max(seqs, key=len) if you prefer the longest)
+        sequence = seqs[0] if seqs else parsed.get("sequence")
+
 
         # If gene name was identified, try fetching from NCBI
         gene_name = parsed.get("gene_name")
@@ -106,4 +168,3 @@ class BioQueryLocal:
             "Translate BRCA1 fragment",
             "Get six-frame translation of p53_fragment",
         ]
-
