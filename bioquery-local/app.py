@@ -45,13 +45,13 @@ with st.sidebar:
         if st.button(ex[:30] + "...", key=ex):
             st.session_state.query = ex
 
-    st.markdown("### 📚 Example Sequences")
-    if st.button("Load Test DNA"):
+    st.markdown("### 📚 Example Sequence")
+    if st.button("Load Test DNA (PAE1265)"):
         st.session_state.query = bq.example_sequences["test_dna"]
-    if st.button("Load BRCA1 Fragment"):
-        st.session_state.query = bq.example_sequences["brca1_fragment"]
-    if st.button("Load P53 Fragment"):
-        st.session_state.query = bq.example_sequences["p53_fragment"]
+    #if st.button("Load BRCA1 Fragment"):
+    #    st.session_state.query = bq.example_sequences["brca1_fragment"]
+    #if st.button("Load P53 Fragment"):
+    #    st.session_state.query = bq.example_sequences["p53_fragment"]
 
 # Main interface
 col1, col2 = st.columns([3, 1])
