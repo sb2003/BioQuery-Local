@@ -36,6 +36,8 @@ with st.sidebar:
 - **GC Content**: Calculate GC percentage
 - **Restriction Sites**: Find enzyme cut sites
 - **Pattern Search**: Find sequence patterns
+- **Six-Frame**: Translate in all 6 frames
+- **K-mer Word Count**: Count k-mer frequencies (EMBOSS wordcount)
 """
     )
 
@@ -62,7 +64,7 @@ with col1:
     st.text_area(
         "Enter your bioinformatics question or paste a sequence:",
         key="query",            # <-- let Streamlit manage the current value
-        height=120,
+        height=220,
         placeholder="Try: 'Translate ATGGCGAAT' or 'Find ORFs in this sequence...'",
     )
 with col2:
