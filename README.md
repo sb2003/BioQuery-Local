@@ -26,7 +26,6 @@ Copy this folder:<br />
 Create the conda env:<br />
   conda env create -f environment.yml<br />
   conda activate bioquery<br />
-  conda activate bioquery<br />
 
 Install and start Ollama, then pull the model:<br />
   brew install ollama<br />
