@@ -22,6 +22,7 @@ Available bioinformatics tools:
 - restriction: Find restriction enzyme sites
 - gc_content: Calculate GC content percentage
 - sixframe: Translate in all six reading frames
+- kmer: Count k-mer (word) frequencies
 """
 
     def parse_query(self, user_query: str) -> dict:
@@ -104,6 +105,21 @@ Be concise and accurate.
             result["tool"] = "restriction"
         elif "gc" in query_lower:
             result["tool"] = "gc_content"
+        elif "kmer" in query_lower or "word count" in query_lower or re.search(r"\b\d+\s*-\s*mer\b", query_lower):
+            result["tool"] = "kmer"
+            params = {}
+
+            m = re.search(r"\b(\d+)\s*-\s*mer\b", query, flags=re.I)
+            if not m:
+                m = re.search(r"\b(?:k|word(?:\s*size)?)\s*(?:=|:)?\s*(\d+)\b", query, flags=re.I)
+            params["k"] = int(m.group(1)) if m else 6
+
+            # flags
+            params["overlap"]  = not re.search(r"non[-\s]?overlap|without\s+overlap|nonoverlapping", query, flags=re.I)
+            params["circular"] = bool(re.search(r"\bcircular\b", query, flags=re.I))
+            if re.search(r"\blinear\b", query, flags=re.I):
+                params["circular"] = False
+
+            result["parameters"] = params
 
         return result
-
