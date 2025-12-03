@@ -10,7 +10,7 @@ BioQuery Local is a tiny Streamlit app that lets you run common bioinformatics t
 • GC content (overall and sliding window = 10)<br />
 • Pattern search with mismatches (EMBOSS fuzznuc; forward + reverse)<br />
 • Six-frame translation (transeq -frame 6; headers relabeled to +1,+2,+3,-1,-2,-3)<br />
-• Restriction sites (built-in scanner for common enzymes: EcoRI, NotI, XbaI, BamHI, HindIII, KpnI, PstI, XhoI, NheI, SpeI, SacI). This avoids the EMBOSS “restrict needs REBASEEXTRACT” dependency. <br />
+• Restriction sites (built-in scanner for common enzymes: EcoRI, NotI, XbaI, BamHI, HindIII, KpnI, PstI, XhoI, NheI, SpeI, SacI). <br />
 
 **What you need installed** <br />
 • Conda (Miniforge/Anaconda) <br />
