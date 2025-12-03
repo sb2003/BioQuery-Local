@@ -41,7 +41,7 @@ Install and start Ollama, then pull the model:<br />
 
 First-run quick test (recommended right after activation):<br />
   conda activate bioquery<br />
-  cd ~/bioquery-local<br />
+  cd bioquery-local<br />
   python test_bioquery.py<br />
 
 **Launch the app:** <br />
