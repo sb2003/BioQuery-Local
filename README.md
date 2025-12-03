@@ -16,6 +16,8 @@ BioQuery Local is a tiny Streamlit app that lets you run common bioinformatics t
 • Conda (Miniforge/Anaconda) <br />
 • Homebrew (for Ollama) <br />
 • Ollama running locally, with the model phi3:mini pulled <br />
+• EMBOSS (via conda)<br />
+• Python packages: biopython, streamlit, ollama (Python client)<br />
 
 **How to install and run** <br />
 
