@@ -28,6 +28,10 @@ Copy this folder:<br />
 Create the conda env:<br />
   conda env create -f environment.yml<br />
   conda activate bioquery<br />
+  
+Install bioinformatics tools:<br />
+  conda install -c bioconda emboss biopython<br />
+  conda install -c conda-forge streamlit pandas<br />
 
 Install and start Ollama, then pull the model:<br />
   brew install ollama<br />
