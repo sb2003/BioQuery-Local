@@ -19,6 +19,7 @@ class EMBOSSWrapper:
             "shuffle": "shuffleseq",
             "info": "infoseq",
             "sixframe": "sixpack",
+            "kmer": "wordcount",
         }
         self.check_emboss()
 
@@ -141,22 +142,46 @@ class EMBOSSWrapper:
         """Find ORFs using getorf"""
         return self.run_emboss_tool("getorf", sequence, minsize=minsize)
 
-    def find_pattern(self, sequence: str, pattern: str) -> str:
-        """Find sequence pattern using fuzznuc"""
-        return self.run_emboss_tool("fuzznuc", sequence, pattern=pattern)
+    def find_pattern(self, sequence: str, pattern: str, mismatch: int = 0, **kwargs) -> str:
+        """
+        Run fuzznuc. Accepts either `mismatch` or `pmismatch` from callers.
+        """
+        # prefer explicit pmismatch, else use mismatch
+        mm = kwargs.pop("pmismatch", mismatch)
+        try:
+            mm = int(mm)
+        except Exception:
+            mm = 0
+
+        return self.run_emboss_tool(
+            "fuzznuc",
+            sequence,
+            pattern=pattern,
+            pmismatch=mm,
+            complement="Y",
+            rformat="seqtable",
+            # **kwargs  # (optional) pass through any other flags if you later add them
+        )    
 
     def restriction_sites(self, sequence: str) -> str:
         """
-        Find restriction sites without using EMBOSS restrict (which was veeeeery broken).
-        We scan for a few common enzymes: EcoRI, NotI, XbaI, BamHI.
+        Find restriction sites without using EMBOSS restrict (which reaaaaaaaly didn't want to work).
+        We scan for a few most common enzymes.
         """
         seq = sequence.upper().replace("\n", "")
 
         sites = {
-            "EcoRI": "GAATTC",
-            "NotI":  "GCGGCCGC",
-            "XbaI":  "TCTAGA",
-            "BamHI": "GGATCC",
+            "EcoRI":  "GAATTC",
+            "BamHI":  "GGATCC",
+            "HindIII":"AAGCTT",
+            "XhoI":   "CTCGAG",
+            "XbaI":   "TCTAGA",
+            "SpeI":   "ACTAGT",
+            "NotI":   "GCGGCCGC",
+            "NdeI":   "CATATG",
+            "NcoI":   "CCATGG",
+            "PstI":   "CTGCAG",
+            "SacI":   "GAGCTC",
         }
 
         hits = []
@@ -174,3 +199,7 @@ class EMBOSSWrapper:
             return "No EcoRI/NotI/XbaI/BamHI sites found in the given sequence."
 
         return "\n".join(hits)
+
+    def kmer(self, sequence: str, k: int = 3) -> str:
+        # EMBOSS wordcount: no 'circular', no 'overlap'
+        return self.run_emboss_tool("wordcount", sequence, wordsize=k)
