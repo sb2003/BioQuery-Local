@@ -41,13 +41,15 @@ with st.sidebar:
 
     st.markdown("### 💡 Example Queries")
     examples = bq.get_examples()
-    for ex in examples[:5]:
-        if st.button(ex[:30] + "...", key=ex):
+    for i, ex in enumerate(examples[:5]):
+        if st.button(ex[:30] + "...", key=f"exbtn_{i}"):
             st.session_state.query = ex
+            st.rerun()
 
     st.markdown("### 📚 Example Sequence")
-    if st.button("Load Test DNA (PAE1265)"):
+    if st.button("Load Test DNA (PAE1265)", key="load_test_dna"):
         st.session_state.query = bq.example_sequences["test_dna"]
+        st.rerun()
     #if st.button("Load BRCA1 Fragment"):
     #    st.session_state.query = bq.example_sequences["brca1_fragment"]
     #if st.button("Load P53 Fragment"):
@@ -57,9 +59,9 @@ with st.sidebar:
 col1, col2 = st.columns([3, 1])
 
 with col1:
-    query = st.text_area(
+    st.text_area(
         "Enter your bioinformatics question or paste a sequence:",
-        value=st.session_state.get("query", ""),
+        key="query",            # <-- let Streamlit manage the current value
         height=120,
         placeholder="Try: 'Translate ATGGCGAAT' or 'Find ORFs in this sequence...'",
     )
@@ -77,11 +79,11 @@ if clear_button:
     st.session_state.history = []
     st.rerun()
 
-if process_button and query:
-    st.session_state.query = query
+if process_button and st.session_state.query.strip():
+    q = st.session_state.query.strip()
     with st.spinner("🤔 Understanding your query with local LLM..."):
-        result = bq.process_query(query)
-        st.session_state.history.append((query, result))
+        result = bq.process_query(q)
+    st.session_state.history.append((q, result))
 
     if result.get("success"):
         st.success(f"✅ Executed: {result.get('tool')}")
@@ -121,7 +123,7 @@ if process_button and query:
             st.markdown("### Behind the Scenes")
             st.markdown(
                 f"""
-1. **Query received**: "{query[:100]}..."
+1. **Query received**: "{q[:100]}..."
 2. **LLM parsing**: Local Ollama model identified the intent
 3. **Tool selected**: `{result.get('tool')}`
 4. **Sequence extracted**: {result.get('sequence')}
