@@ -67,4 +67,3 @@ class BioTools:
             "gc_content": gc_percent,
             "at_content": 100.0 - gc_percent,
         }
-
