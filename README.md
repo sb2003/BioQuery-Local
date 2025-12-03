@@ -32,6 +32,11 @@ Install and start Ollama, then pull the model:<br />
   brew services start ollama<br />
   ollama pull phi3:mini<br />
 
+First-run quick test (recommended right after activation):
+  conda activate bioquery
+  cd ~/bioquery-local
+  python test_bioquery.py
+
 **Launch the app:** <br />
 streamlit run app.py<br />
 
