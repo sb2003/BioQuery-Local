@@ -40,10 +40,7 @@ First-run quick test (recommended right after activation):<br />
 **Launch the app:** <br />
 streamlit run app.py<br />
 
-Subsequent times:<br />
-conda activate bioquery <br />
-cd ~/bioquery-local<br /> 
-streamlit run app.py<br />
+Make sure you are in /bioquery_local and (bioquery) conda environment <br />
 
 **Model choice** <br />
 By default the LLM parser uses phi3:mini. You can switch models by editing llm_parser.py (the LocalLLMParser init “model” argument).<br />
