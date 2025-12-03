@@ -221,6 +221,11 @@ class BioQueryLocal:
             result = self.biotools.gc_content(sequence)
         elif tool == "sixframe":
             result = self.emboss.sixframe(sequence)
+        elif tool == "kmer":
+            m = re.search(r'(?i)(k[-\s]?mer|word\s*count)\s*(?:=|of|:)?\s*(\d+)', query)
+            k = int(m.group(2)) if m else 3
+            k = max(1, min(12, k))  # keep it sane
+            result = self.emboss.kmer(sequence, k=k)
         else:
             result = f"Unknown tool: {tool}"
 
