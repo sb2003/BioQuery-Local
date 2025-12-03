@@ -32,6 +32,7 @@ Create the conda env:<br />
 Install bioinformatics tools:<br />
   conda install -c bioconda emboss biopython<br />
   conda install -c conda-forge streamlit pandas<br />
+  pip install ollama<br />
 
 Install and start Ollama, then pull the model:<br />
   brew install ollama<br />
